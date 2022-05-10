@@ -21,25 +21,44 @@ def home():
     return res, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
+@app.route("/hospitalDemand", methods=["POST"], strict_slashes=False)
+@cross_origin()
+def newHospitalDemand():
+    hospitalDemand = request.json["body"]
+    print("hospital demand : ", hospitalDemand)
+    register_hospital_demand(json.loads(hospitalDemand))
+    res = jsonify(json.dumps({"msg":"successfully registered demand", "hospitalDemand":hospitalDemand,"count":FacilityCenter.HospitalDemandCount}))
+    return res, 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route("/showHospitalDemand", methods=["GET"], strict_slashes=False)
+@cross_origin()
+def showHospitalDemand():
+    return jsonify(json.dumps({"hospitalDemand": FacilityCenter.hospitalDemandList})), 200
+
+
 @app.route("/fbf", methods=["GET"], strict_slashes=False)
 @cross_origin()
 def fbf():
-  return jsonify(json.dumps({"donors":FacilityCenter.fbfDonorsList})),200
+    return jsonify(json.dumps({"donors": FacilityCenter.fbfDonorsList})), 200
+
 
 @app.route("/mbf", methods=["GET"], strict_slashes=False)
 @cross_origin()
 def mbf():
-  return jsonify(json.dumps({"donors":FacilityCenter.mbfDonorsList})),200
+    return jsonify(json.dumps({"donors": FacilityCenter.mbfDonorsList})), 200
+
 
 @app.route("/bloodCenter", methods=["GET"], strict_slashes=False)
 @cross_origin()
 def bloodCenter():
-  return jsonify(json.dumps({"donors":FacilityCenter.bloodCenterDonorsList})),200
+    return jsonify(json.dumps({"donors": FacilityCenter.bloodCenterDonorsList})), 200
+
 
 @app.route("/all", methods=["GET"], strict_slashes=False)
 @cross_origin()
 def all():
-  return jsonify(json.dumps({"donors":FacilityCenter.donorsList})),200
+    return jsonify(json.dumps({"donors": FacilityCenter.donorsList})), 200
+
 
 class FacilityCenter:
 
@@ -53,6 +72,18 @@ class FacilityCenter:
     mbfDonorsList = []
     bloodCenterDonorsList = []
 
+    hospitalDemandList = []
+    HospitalDemandCount = 0
+
+
+class HospitalDemand:
+
+    def __init__(self, hospitalName, age, bloodgroup, quantity):
+        self.hospitalName = hospitalName
+        self.age = age
+        self.bloodgroup = bloodgroup
+        self.quantity = quantity
+
 
 class Donor:
 
@@ -64,8 +95,10 @@ class Donor:
         self.location = location
         self.mobile = mobile
         self.facilityChoice = facilityChoice
-        self.list = [fname,lname,age,bloodGroup,location,mobile,facilityChoice]
-        self.dict ={"firstName":fname,"lastName":lname,"age":age,"bloodGroup":bloodGroup,"location":location,"mobile":mobile,"facilityChoice":facilityChoice}
+        self.list = [fname, lname, age, bloodGroup,
+                     location, mobile, facilityChoice]
+        self.dict = {"firstName": fname, "lastName": lname, "age": age, "bloodGroup": bloodGroup,
+                     "location": location, "mobile": mobile, "facilityChoice": facilityChoice}
 
         if(facilityChoice == "fixed"):
             FacilityCenter.fbfCount += 1
@@ -83,6 +116,13 @@ class Donor:
 def register_donor(donor):
     FacilityCenter.donorsList.append(Donor(donor["firstName"], donor["lastName"], donor["age"],
                                      donor["bloodGroup"], donor["location"], donor["mobile"], donor["facilityCenter"]).dict)
+
+
+def register_hospital_demand(hospitalDemand):
+    FacilityCenter.HospitalDemandCount+=1
+    FacilityCenter.hospitalDemandList.append(hospitalDemand)
+    # FacilityCenter.hospitalDemandList.append(HospitalDemand(
+    #     hospitalDemand["hospitalName"], hospitalDemand["age"], hospitalDemand["bloodgroup"], hospitalDemand["quantity"]).dict)
 
 
 if __name__ == '__main__':
